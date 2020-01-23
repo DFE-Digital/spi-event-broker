@@ -24,6 +24,7 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Publishers
         {
             _configuration = configuration;
             _logger = logger;
+            
             var storageAccount = CloudStorageAccount.Parse(configuration.StorageConnectionString);
             var blobClient = storageAccount.CreateCloudBlobClient();
             _container = blobClient.GetContainerReference(configuration.StorageContainerName);

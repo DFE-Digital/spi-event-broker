@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dfe.Spi.Common.Logging.Definitions;
+using Dfe.Spi.EventBroker.Domain.Events;
 using Dfe.Spi.EventBroker.Domain.Publishers;
 using Newtonsoft.Json.Linq;
 
@@ -16,22 +17,30 @@ namespace Dfe.Spi.EventBroker.Application.Receive
     public class ReceiveManager : IReceiveManager
     {
         private readonly IPublisherRepository _publisherRepository;
+        private readonly IEventRepository _eventRepository;
         private readonly ILoggerWrapper _logger;
 
         public ReceiveManager(
             IPublisherRepository publisherRepository,
+            IEventRepository eventRepository,
             ILoggerWrapper logger)
         {
             _publisherRepository = publisherRepository;
+            _eventRepository = eventRepository;
             _logger = logger;
         }
         
         public async Task ReceiveAsync(string source, string eventType, string payload, CancellationToken cancellationToken)
         {
             await ValidateRequestAsync(source, eventType, payload, cancellationToken);
-            
-            // TODO: Store publication
-            
+
+            var eventId = Guid.NewGuid().ToString().ToLower();
+            await _eventRepository.StoreAsync(new Event
+            {
+                Id = eventId,
+                Payload = payload,
+            }, cancellationToken);
+
             // TODO: Queue distributions to subscribers
         }
 

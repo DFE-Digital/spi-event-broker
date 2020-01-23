@@ -38,7 +38,10 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests
             return new ConfigurationBuilder()
                 .AddInMemoryCollection(new[]
                 {
-                    new KeyValuePair<string, string>("key", "value"),
+                    new KeyValuePair<string, string>("Publisher:StorageConnectionString", "UseDevelopmentStorage=true"),
+                    new KeyValuePair<string, string>("Publisher:StorageContainerName", "TestPublisher"),
+                    new KeyValuePair<string, string>("Event:StorageConnectionString", "UseDevelopmentStorage=true"),
+                    new KeyValuePair<string, string>("Event:StorageContainerName", "TestPublisher"),
                 }).Build();
         }
 
