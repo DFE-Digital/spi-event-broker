@@ -4,7 +4,8 @@
         <AzureFunctionsVersion>v2</AzureFunctionsVersion>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Dfe.Spi.Common.Logging" Version="1.0.7" />
+        <PackageReference Include="Dfe.Spi.Common.Http.Server" Version="1.0.6" />
+        <PackageReference Include="Dfe.Spi.Common.Logging" Version="1.0.9" />
         <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
         <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="3.0.10" />
         <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.29" />
@@ -19,6 +20,7 @@
         </None>
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\Dfe.Spi.EventBroker.Application\Dfe.Spi.EventBroker.Application.csproj" />
       <ProjectReference Include="..\Dfe.Spi.EventBroker.Domain\Dfe.Spi.EventBroker.Domain.csproj" />
     </ItemGroup>
 </Project>

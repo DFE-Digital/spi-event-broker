@@ -1,6 +1,7 @@
 using System.IO;
 using Dfe.Spi.Common.Logging;
 using Dfe.Spi.Common.Logging.Definitions;
+using Dfe.Spi.EventBroker.Application.Receive;
 using Dfe.Spi.EventBroker.Domain.Configuration;
 using Dfe.Spi.EventBroker.Functions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -29,6 +30,7 @@ namespace Dfe.Spi.EventBroker.Functions
 
             AddConfiguration(services, rawConfiguration);
             AddLogging(services);
+            AddManagers(services);
         }
 
         private IConfigurationRoot BuildConfiguration()
@@ -57,6 +59,11 @@ namespace Dfe.Spi.EventBroker.Functions
             services.AddScoped<ILogger>(provider =>
                 provider.GetService<ILoggerFactory>().CreateLogger(LogCategories.CreateFunctionUserCategory("Common")));
             services.AddScoped<ILoggerWrapper, LoggerWrapper>();
+        }
+
+        private void AddManagers(IServiceCollection services)
+        {
+            services.AddScoped<IReceiveManager, ReceiveManager>();
         }
     }
 }
