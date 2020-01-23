@@ -1,0 +1,62 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - "*"
+
+pr: none
+
+workspace:
+  clean: all
+
+variables:
+  buildConfiguration: 'release'
+  buildPlatform: 'any cpu'
+
+steps:
+  - task: NuGetToolInstaller@1
+    displayName: 'Use NuGet 5.1.0'
+    inputs:
+      versionSpec: '5.1.0'
+      
+  - task: NuGetCommand@2
+    displayName: 'Restore NuGet Packages'
+    inputs:
+      command: 'restore'
+      restoreSolution: '**/*.sln'
+      feedsToUse: 'select'
+      vstsFeed: 'c5095ddb-6433-4990-a3a5-1df8a78b1302/$(FeedSecret)'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build code'
+    inputs:
+      projects: 'src/**/*.csproj'
+      arguments: '--configuration $(buildConfiguration) --no-restore'
+
+  - task: DotNetCoreCLI@2
+    displayName: Test
+    inputs:
+      command: test
+      projects: 'src/**/*.UnitTests.csproj'
+      arguments: '--configuration $(buildConfiguration) --no-build'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish Website'
+    inputs:
+      command: publish
+      publishWebProjects: false
+      projects: 'src/Dfe.Spi.GraphQlApi.Functions/Dfe.Spi.GraphQlApi.Functions.csproj'
+      arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/publish --no-restore --no-build'
+  
+  - task: CopyFiles@2
+    displayName: 'Copy ARM template'
+    inputs:
+      Contents: |
+        azure/*
+      TargetFolder: '$(build.artifactstagingdirectory)/publish'
+      OverWrite: true
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact'
+    inputs:
+      PathtoPublish: '$(build.artifactstagingdirectory)/publish'

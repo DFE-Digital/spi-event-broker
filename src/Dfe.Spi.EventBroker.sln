@@ -8,6 +8,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{46D21F42
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dfe.Spi.EventBroker.Functions.UnitTests", "Dfe.Spi.EventBroker.Functions.UnitTests\Dfe.Spi.EventBroker.Functions.UnitTests.csproj", "{5790AD69-3579-43F4-A339-968E5EE1A405}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deploy", "Deploy", "{DCD83DB8-BD40-4C8C-ADFD-F8C1C2D1C6E1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{D9ED87E6-6A89-4545-A0CF-65A3DC24E0DA}"
+ProjectSection(SolutionItems) = preProject
+	..\pipelines\build.yml = ..\pipelines\build.yml
+EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Release", "Release", "{38AC5C9F-49D5-4670-A2C4-271E2D6854D0}"
+ProjectSection(SolutionItems) = preProject
+	..\azure\template.json = ..\azure\template.json
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,5 +41,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5790AD69-3579-43F4-A339-968E5EE1A405} = {46D21F42-6621-4A6A-9973-4651356E6671}
+		{D9ED87E6-6A89-4545-A0CF-65A3DC24E0DA} = {DCD83DB8-BD40-4C8C-ADFD-F8C1C2D1C6E1}
+		{38AC5C9F-49D5-4670-A2C4-271E2D6854D0} = {DCD83DB8-BD40-4C8C-ADFD-F8C1C2D1C6E1}
 	EndGlobalSection
 EndGlobal
