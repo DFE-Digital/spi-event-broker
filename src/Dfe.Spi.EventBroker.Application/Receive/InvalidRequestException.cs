@@ -6,8 +6,8 @@ namespace Dfe.Spi.EventBroker.Application.Receive
     {
         public string Code { get; }
 
-        public InvalidRequestException(string code, string message)
-            : base(message)
+        public InvalidRequestException(string code, string message, Exception innnerException = null)
+            : base(message, innnerException)
         {
             Code = code;
         }
