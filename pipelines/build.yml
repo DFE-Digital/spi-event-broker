@@ -45,7 +45,7 @@ steps:
     inputs:
       command: publish
       publishWebProjects: false
-      projects: 'src/Dfe.Spi.GraphQlApi.Functions/Dfe.Spi.GraphQlApi.Functions.csproj'
+      projects: 'src/Dfe.Spi.EventBroker.Functions/Dfe.Spi.EventBroker.Functions.csproj'
       arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/publish --no-restore --no-build'
   
   - task: CopyFiles@2
