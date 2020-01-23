@@ -33,6 +33,8 @@ namespace Dfe.Spi.EventBroker.Functions.Receive
             string eventType,
             CancellationToken cancellationToken)
         {
+            _logger.SetContext(req.Headers);
+            
             _logger.Info($"Received event publication for {source}.{eventType}");
 
             string payload;
