@@ -3,7 +3,9 @@ using Dfe.Spi.Common.Logging;
 using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Receive;
 using Dfe.Spi.EventBroker.Domain.Configuration;
+using Dfe.Spi.EventBroker.Domain.Publishers;
 using Dfe.Spi.EventBroker.Functions;
+using Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Publishers;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs.Logging;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +33,7 @@ namespace Dfe.Spi.EventBroker.Functions
             AddConfiguration(services, rawConfiguration);
             AddLogging(services);
             AddManagers(services);
+            AddPublishers(services);
         }
 
         private IConfigurationRoot BuildConfiguration()
@@ -50,6 +53,7 @@ namespace Dfe.Spi.EventBroker.Functions
             _configuration = new EventBrokerConfiguration();
             _rawConfiguration.Bind(_configuration);
             services.AddSingleton(_configuration);
+            services.AddSingleton(_configuration.Publisher);
         }
 
         private void AddLogging(IServiceCollection services)
@@ -64,6 +68,11 @@ namespace Dfe.Spi.EventBroker.Functions
         private void AddManagers(IServiceCollection services)
         {
             services.AddScoped<IReceiveManager, ReceiveManager>();
+        }
+
+        private void AddPublishers(IServiceCollection services)
+        {
+            services.AddScoped<IPublisherRepository, BlobPublisherRepository>();
         }
     }
 }

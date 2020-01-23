@@ -22,5 +22,6 @@
     <ItemGroup>
       <ProjectReference Include="..\Dfe.Spi.EventBroker.Application\Dfe.Spi.EventBroker.Application.csproj" />
       <ProjectReference Include="..\Dfe.Spi.EventBroker.Domain\Dfe.Spi.EventBroker.Domain.csproj" />
+      <ProjectReference Include="..\Dfe.Spi.EventBroker.Infrastructure.AzureStorage\Dfe.Spi.EventBroker.Infrastructure.AzureStorage.csproj" />
     </ItemGroup>
 </Project>
