@@ -3,11 +3,15 @@ using Dfe.Spi.Common.Logging;
 using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Receive;
 using Dfe.Spi.EventBroker.Domain.Configuration;
+using Dfe.Spi.EventBroker.Domain.Distributions;
 using Dfe.Spi.EventBroker.Domain.Events;
 using Dfe.Spi.EventBroker.Domain.Publishers;
+using Dfe.Spi.EventBroker.Domain.Subscriptions;
 using Dfe.Spi.EventBroker.Functions;
+using Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Distributions;
 using Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Events;
 using Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Publishers;
+using Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Subscriptions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs.Logging;
 using Microsoft.Extensions.Configuration;
@@ -37,6 +41,8 @@ namespace Dfe.Spi.EventBroker.Functions
             AddManagers(services);
             AddPublishers(services);
             AddEvents(services);
+            AddDistributions(services);
+            AddSubscriptions(services);
         }
 
         private IConfigurationRoot BuildConfiguration()
@@ -58,6 +64,8 @@ namespace Dfe.Spi.EventBroker.Functions
             services.AddSingleton(_configuration);
             services.AddSingleton(_configuration.Publisher);
             services.AddSingleton(_configuration.Event);
+            services.AddSingleton(_configuration.Distribution);
+            services.AddSingleton(_configuration.Subscription);
         }
 
         private void AddLogging(IServiceCollection services)
@@ -81,6 +89,17 @@ namespace Dfe.Spi.EventBroker.Functions
         private void AddEvents(IServiceCollection services)
         {
             services.AddScoped<IEventRepository, BlobEventRepository>();
+        }
+
+        private void AddDistributions(IServiceCollection services)
+        {
+            services.AddScoped<IDistributionRepository, TableDistributionRepository>();
+            services.AddScoped<IDistributionQueue, StorageQueueDistributionQueue>();
+        }
+
+        private void AddSubscriptions(IServiceCollection services)
+        {
+            services.AddScoped<ISubscriptionRepository, TableSubscriptionRepository>();
         }
     }
 }
