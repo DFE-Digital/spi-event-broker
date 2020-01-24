@@ -1,10 +1,13 @@
 using System;
+using System.Collections;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dfe.Spi.Common.Logging.Definitions;
+using Dfe.Spi.EventBroker.Domain.Distributions;
 using Dfe.Spi.EventBroker.Domain.Events;
 using Dfe.Spi.EventBroker.Domain.Publishers;
+using Dfe.Spi.EventBroker.Domain.Subscriptions;
 using Newtonsoft.Json.Linq;
 
 namespace Dfe.Spi.EventBroker.Application.Receive
@@ -18,15 +21,24 @@ namespace Dfe.Spi.EventBroker.Application.Receive
     {
         private readonly IPublisherRepository _publisherRepository;
         private readonly IEventRepository _eventRepository;
+        private readonly ISubscriptionRepository _subscriptionRepository;
+        private readonly IDistributionRepository _distributionRepository;
+        private readonly IDistributionQueue _distributionQueue;
         private readonly ILoggerWrapper _logger;
 
         public ReceiveManager(
             IPublisherRepository publisherRepository,
             IEventRepository eventRepository,
+            ISubscriptionRepository subscriptionRepository,
+            IDistributionRepository distributionRepository,
+            IDistributionQueue distributionQueue,
             ILoggerWrapper logger)
         {
             _publisherRepository = publisherRepository;
             _eventRepository = eventRepository;
+            _subscriptionRepository = subscriptionRepository;
+            _distributionRepository = distributionRepository;
+            _distributionQueue = distributionQueue;
             _logger = logger;
         }
         
@@ -41,7 +53,25 @@ namespace Dfe.Spi.EventBroker.Application.Receive
                 Payload = payload,
             }, cancellationToken);
 
-            // TODO: Queue distributions to subscribers
+            var subscriptions =
+                await _subscriptionRepository.GetSubscriptionsToEventAsync(source, eventType, cancellationToken);
+            _logger.Debug($"Found {subscriptions.Length} subscribers to event {source}.{eventType}");
+            foreach (var subscription in subscriptions)
+            {
+                var distribution = new Distribution
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    SubscriptionId = subscription.Id,
+                    EventId = eventId,
+                };
+                await _distributionRepository.CreateAsync(distribution, cancellationToken);
+                _logger.Debug($"Created distribution with id {distribution.Id} for subscription {subscription.Id} to send event {eventId} ({source}.{eventType})");
+
+                await _distributionQueue.EnqueueAsync(distribution, cancellationToken);
+                _logger.Info($"Queued distribution with id {distribution.Id} for subscription {subscription.Id} to send event {eventId} ({source}.{eventType})");
+            }
+            
+            _logger.Info($"Finished receiving and distributing event {eventId} ({source}.{eventType})");
         }
 
         private async Task ValidateRequestAsync(string source, string eventType, string payload,

@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 using AutoFixture.NUnit3;
 using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Receive;
+using Dfe.Spi.EventBroker.Domain.Distributions;
 using Dfe.Spi.EventBroker.Domain.Events;
 using Dfe.Spi.EventBroker.Domain.Publishers;
+using Dfe.Spi.EventBroker.Domain.Subscriptions;
 using Moq;
 using NJsonSchema;
 using NUnit.Framework;
@@ -21,6 +23,9 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Receive
 
         private Mock<IPublisherRepository> _publisherRepositoryMock;
         private Mock<IEventRepository> _eventRepositoryMock;
+        private Mock<ISubscriptionRepository> _subscriptionRepositoryMock;
+        private Mock<IDistributionRepository> _distributionRepositoryMock;
+        private Mock<IDistributionQueue> _distributionQueueMock;
         private Mock<ILoggerWrapper> _loggerMock;
         private ReceiveManager _manager;
         private CancellationToken _cancellationToken;
@@ -44,11 +49,20 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Receive
 
             _eventRepositoryMock = new Mock<IEventRepository>();
 
+            _subscriptionRepositoryMock = new Mock<ISubscriptionRepository>();
+
+            _distributionRepositoryMock = new Mock<IDistributionRepository>();
+
+            _distributionQueueMock = new Mock<IDistributionQueue>();
+
             _loggerMock = new Mock<ILoggerWrapper>();
 
             _manager = new ReceiveManager(
                 _publisherRepositoryMock.Object,
                 _eventRepositoryMock.Object,
+                _subscriptionRepositoryMock.Object,
+                _distributionRepositoryMock.Object,
+                _distributionQueueMock.Object,
                 _loggerMock.Object);
 
             _cancellationToken = new CancellationToken();
@@ -108,8 +122,62 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Receive
 
             const string guidPattern = "^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$";
             _eventRepositoryMock.Verify(r => r.StoreAsync(It.Is<Event>(
-                    p => Regex.IsMatch(p.Id, guidPattern) && p.Payload == DefaultPayload), It.IsAny<CancellationToken>()),
+                        p => Regex.IsMatch(p.Id, guidPattern) && p.Payload == DefaultPayload),
+                    It.IsAny<CancellationToken>()),
                 Times.Once);
+        }
+
+        [Test]
+        public async Task ThenItShouldGetSubscriptionsForEvent()
+        {
+            await _manager.ReceiveAsync(DefaultSource, DefaultEventType, DefaultPayload, _cancellationToken);
+
+            _subscriptionRepositoryMock.Verify(r => r.GetSubscriptionsToEventAsync(
+                DefaultSource, DefaultEventType, _cancellationToken), Times.Once);
+        }
+
+        [Test, AutoData]
+        public async Task ThenItShouldCreateDistributionPerSubscription(Subscription[] subscriptions)
+        {
+            _subscriptionRepositoryMock.Setup(r => r.GetSubscriptionsToEventAsync(
+                    It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(subscriptions);
+
+            await _manager.ReceiveAsync(DefaultSource, DefaultEventType, DefaultPayload, _cancellationToken);
+
+            _distributionRepositoryMock.Verify(r => r.CreateAsync(
+                    It.IsAny<Distribution>(), It.IsAny<CancellationToken>()),
+                Times.Exactly(subscriptions.Length));
+            for (var i = 0; i < subscriptions.Length; i++)
+            {
+                _distributionRepositoryMock.Verify(r => r.CreateAsync(
+                        It.Is<Distribution>(d => d.SubscriptionId == subscriptions[i].Id),
+                        It.IsAny<CancellationToken>()),
+                    Times.Once,
+                    $"Expected distribution to be created for subscription {i}");
+            }
+        }
+
+        [Test, AutoData]
+        public async Task ThenItShouldQueueDistributionPerSubscription(Subscription[] subscriptions)
+        {
+            _subscriptionRepositoryMock.Setup(r => r.GetSubscriptionsToEventAsync(
+                    It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(subscriptions);
+
+            await _manager.ReceiveAsync(DefaultSource, DefaultEventType, DefaultPayload, _cancellationToken);
+
+            _distributionQueueMock.Verify(r => r.EnqueueAsync(
+                    It.IsAny<Distribution>(), It.IsAny<CancellationToken>()),
+                Times.Exactly(subscriptions.Length));
+            for (var i = 0; i < subscriptions.Length; i++)
+            {
+                _distributionQueueMock.Verify(r => r.EnqueueAsync(
+                        It.Is<Distribution>(d => d.SubscriptionId == subscriptions[i].Id),
+                        It.IsAny<CancellationToken>()),
+                    Times.Once,
+                    $"Expected distribution to be queued for subscription {i}");
+            }
         }
     }
 }
