@@ -137,6 +137,46 @@
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
               "value": "[reference(resourceId(variables('sharedResourceGroupName'), 'microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "SPI_Publisher__StorageConnectionString",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "SPI_Publisher__StorageContainerName",
+              "value": "publishers"
+            },
+            {
+              "name": "SPI_Publisher__StorageFolderName",
+              "value": ""
+            },
+            {
+              "name": "SPI_Event__StorageConnectionString",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "SPI_Event__StorageContainerName",
+              "value": "events"
+            },
+            {
+              "name": "SPI_Event__StorageFolderName",
+              "value": ""
+            },
+            {
+              "name": "SPI_Distribution__StorageConnectionString",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "SPI_Distribution__StorageTableName",
+              "value": "distributions"
+            },
+            {
+              "name": "SPI_Subscription__StorageConnectionString",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "SPI_Subscription__StorageTableName",
+              "value": "subscriptions"
             }
           ]
         }
