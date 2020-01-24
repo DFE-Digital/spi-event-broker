@@ -42,6 +42,10 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests
                     new KeyValuePair<string, string>("Publisher:StorageContainerName", "TestPublisher"),
                     new KeyValuePair<string, string>("Event:StorageConnectionString", "UseDevelopmentStorage=true"),
                     new KeyValuePair<string, string>("Event:StorageContainerName", "TestPublisher"),
+                    new KeyValuePair<string, string>("Distribution:StorageConnectionString", "UseDevelopmentStorage=true"),
+                    new KeyValuePair<string, string>("Distribution:StorageTableName", "TestDistribution"),
+                    new KeyValuePair<string, string>("Subscription:StorageConnectionString", "UseDevelopmentStorage=true"),
+                    new KeyValuePair<string, string>("Subscription:StorageTableName", "TestDistribution"),
                 }).Build();
         }
 
