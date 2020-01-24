@@ -50,6 +50,8 @@ namespace Dfe.Spi.EventBroker.Application.Receive
             await _eventRepository.StoreAsync(new Event
             {
                 Id = eventId,
+                Publisher = source,
+                EventType = eventType,
                 Payload = payload,
             }, cancellationToken);
 
