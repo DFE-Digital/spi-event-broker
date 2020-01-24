@@ -2,6 +2,7 @@ using System.IO;
 using Dfe.Spi.Common.Logging;
 using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Receive;
+using Dfe.Spi.EventBroker.Application.Send;
 using Dfe.Spi.EventBroker.Domain.Configuration;
 using Dfe.Spi.EventBroker.Domain.Distributions;
 using Dfe.Spi.EventBroker.Domain.Events;
@@ -17,6 +18,7 @@ using Microsoft.Azure.WebJobs.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RestSharp;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 namespace Dfe.Spi.EventBroker.Functions
@@ -38,6 +40,7 @@ namespace Dfe.Spi.EventBroker.Functions
 
             AddConfiguration(services, rawConfiguration);
             AddLogging(services);
+            AddHttp(services);
             AddManagers(services);
             AddPublishers(services);
             AddEvents(services);
@@ -76,9 +79,15 @@ namespace Dfe.Spi.EventBroker.Functions
             services.AddScoped<ILoggerWrapper, LoggerWrapper>();
         }
 
+        private void AddHttp(IServiceCollection services)
+        {
+            services.AddTransient<IRestClient, RestClient>();
+        }
+
         private void AddManagers(IServiceCollection services)
         {
             services.AddScoped<IReceiveManager, ReceiveManager>();
+            services.AddScoped<ISendManager, SendManager>();
         }
 
         private void AddPublishers(IServiceCollection services)

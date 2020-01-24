@@ -44,8 +44,24 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Subscriptions
             return results.ToArray();
         }
 
+        public async Task<Subscription> GetSubscriptionToEventAsync(string publisher, string eventType, string subscriptionId,
+            CancellationToken cancellationToken)
+        {
+            var operation = TableOperation.Retrieve<SubscriptionEntity>(
+                GetPartitionKey(publisher, eventType),
+                subscriptionId);
+            var result = await _table.ExecuteAsync(operation, cancellationToken);
+            
+            return EntityToModel((SubscriptionEntity) result.Result);
+        }
+
+
         private Subscription EntityToModel(SubscriptionEntity entity)
         {
+            if (entity == null)
+            {
+                return null;
+            }
             return new Subscription
             {
                 Id = entity.Id,

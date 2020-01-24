@@ -31,6 +31,18 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Events
             await blob.UploadTextAsync(JsonConvert.SerializeObject(@event), cancellationToken);
         }
 
+        public async Task<Event> GetAsync(string id, CancellationToken cancellationToken)
+        {
+            var blob = await GetBlobReferenceAsync($"{id}.json", true, cancellationToken);
+            if (blob == null)
+            {
+                return null;
+            }
+
+            var json = await blob.DownloadTextAsync(cancellationToken);
+            return JsonConvert.DeserializeObject<Event>(json);
+        }
+
 
         private async Task<CloudBlockBlob> GetBlobReferenceAsync(string fileName, bool checkExists, CancellationToken cancellationToken)
         {
