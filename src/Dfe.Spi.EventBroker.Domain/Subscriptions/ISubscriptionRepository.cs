@@ -9,5 +9,6 @@ namespace Dfe.Spi.EventBroker.Domain.Subscriptions
             CancellationToken cancellationToken);
         Task<Subscription> GetSubscriptionToEventAsync(string publisher, string eventType, string subscriptionId,
             CancellationToken cancellationToken);
+        Task UpdateSubscriptionAsync(Subscription subscription, CancellationToken cancellationToken);
     }
 }

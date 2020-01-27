@@ -4,6 +4,7 @@ using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Publishers;
 using Dfe.Spi.EventBroker.Application.Receive;
 using Dfe.Spi.EventBroker.Application.Send;
+using Dfe.Spi.EventBroker.Application.Subscriptions;
 using Dfe.Spi.EventBroker.Domain.Configuration;
 using Dfe.Spi.EventBroker.Domain.Distributions;
 using Dfe.Spi.EventBroker.Domain.Events;
@@ -19,6 +20,8 @@ using Microsoft.Azure.WebJobs.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using RestSharp;
 
 [assembly: FunctionsStartup(typeof(Startup))]
@@ -38,6 +41,12 @@ namespace Dfe.Spi.EventBroker.Functions
         public void Configure(IFunctionsHostBuilder builder, IConfigurationRoot rawConfiguration)
         {
             var services = builder.Services;
+            
+            JsonConvert.DefaultSettings =
+                () => new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                };
 
             AddConfiguration(services, rawConfiguration);
             AddLogging(services);
@@ -90,6 +99,7 @@ namespace Dfe.Spi.EventBroker.Functions
             services.AddScoped<IReceiveManager, ReceiveManager>();
             services.AddScoped<ISendManager, SendManager>();
             services.AddScoped<IPublisherManager, PublisherManager>();
+            services.AddScoped<ISubscriptionManager, SubscriptionManager>();
         }
 
         private void AddPublishers(IServiceCollection services)

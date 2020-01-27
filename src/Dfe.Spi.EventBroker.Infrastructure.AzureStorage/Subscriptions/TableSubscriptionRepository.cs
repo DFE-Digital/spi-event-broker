@@ -55,6 +55,12 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Subscriptions
             return EntityToModel((SubscriptionEntity) result.Result);
         }
 
+        public async Task UpdateSubscriptionAsync(Subscription subscription, CancellationToken cancellationToken)
+        {
+            var operation = TableOperation.InsertOrReplace(ModelToEntity(subscription));
+            await _table.ExecuteAsync(operation, cancellationToken);
+        }
+
 
         private Subscription EntityToModel(SubscriptionEntity entity)
         {
@@ -65,7 +71,22 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Subscriptions
             return new Subscription
             {
                 Id = entity.Id,
+                Publisher = entity.Publisher,
+                EventType = entity.EventType,
                 EndpointUrl = entity.EndpointUrl,
+            };
+        }
+
+        private SubscriptionEntity ModelToEntity(Subscription model)
+        {
+            return new SubscriptionEntity
+            {
+                PartitionKey = GetPartitionKey(model.Publisher, model.EventType),
+                RowKey = model.Id,
+                Id = model.Id,
+                Publisher = model.Publisher,
+                EventType = model.EventType,
+                EndpointUrl = model.EndpointUrl,
             };
         }
 

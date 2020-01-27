@@ -27,5 +27,7 @@
     <ItemGroup>
       <None Remove="Schemas\publish-events-body.json" />
       <EmbeddedResource Include="Schemas\update-published-events-body.json" />
+      <None Remove="Schemas\update-subscription-body.json" />
+      <EmbeddedResource Include="Schemas\update-subscription-body.json" />
     </ItemGroup>
 </Project>

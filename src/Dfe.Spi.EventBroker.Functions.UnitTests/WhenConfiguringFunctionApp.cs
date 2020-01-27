@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Dfe.Spi.EventBroker.Functions.Publishers;
 using Dfe.Spi.EventBroker.Functions.Receive;
 using Dfe.Spi.EventBroker.Functions.Send;
+using Dfe.Spi.EventBroker.Functions.Subscriptions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,6 +59,7 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests
                 typeof(ReceiveEventPublication),
                 typeof(SendDistributionToSubscriber),
                 typeof(UpdatePublishedEvents),
+                typeof(UpdateSubscription),
             };
         }
         
