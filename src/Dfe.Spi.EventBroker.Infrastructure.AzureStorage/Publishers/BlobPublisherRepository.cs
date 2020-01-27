@@ -8,6 +8,7 @@ using Dfe.Spi.EventBroker.Domain.Configuration;
 using Dfe.Spi.EventBroker.Domain.Publishers;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NJsonSchema;
 
@@ -31,69 +32,8 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Publishers
 
         public async Task<Publisher> GetPublisherAsync(string code, CancellationToken cancellationToken)
         {
-            var blobContent = await GetBlobContentAsStringAsync(code, cancellationToken);
-            if (string.IsNullOrEmpty(blobContent))
-            {
-                return null;
-            }
-
-            var json = JObject.Parse(blobContent);
-            var defs = (JObject) json["definitions"];
-
-            var events = new List<PublisherEvent>();
-            foreach (var property in ((JObject) json["events"]).Properties())
-            {
-                var @event = (JObject) property.Value;
-                var schemaJson = ((JObject) @event["schema"]).DeepClone();
-                if (defs != null)
-                {
-                    var schemaDefs = new JProperty("definitions", defs.DeepClone());
-                    schemaJson.Children().Last().AddAfterSelf(schemaDefs);
-                }
-
-                events.Add(new PublisherEvent
-                {
-                    Name = property.Name,
-                    Description = (string) @event["description"],
-                    Schema = await JsonSchema.FromJsonAsync(schemaJson.ToString())
-                });
-            }
-
-            var info = (JObject) json["info"];
-            return new Publisher
-            {
-                Code = (string) info["code"],
-                Name = (string) info["name"],
-                Description = (string) info["description"],
-                Version = (string) info["version"],
-                Events = events.ToArray(),
-            };
-        }
-
-        private async Task<string> GetBlobContentAsStringAsync(string code, CancellationToken cancellationToken)
-        {
-            CloudBlockBlob blob;
             var fileName = $"{code}.json";
-
-            if (!string.IsNullOrEmpty(_configuration.StorageFolderName))
-            {
-                var folder = _container.GetDirectoryReference(_configuration.StorageFolderName);
-                blob = folder.GetBlockBlobReference(fileName);
-                if (!await blob.ExistsAsync(cancellationToken))
-                {
-                    _logger.Debug($"Cannot find blob {fileName} in folder {_configuration.StorageFolderName}");
-                    return null;
-                }
-            }
-            else
-            {
-                blob = _container.GetBlockBlobReference(fileName);
-                if (!await blob.ExistsAsync(cancellationToken))
-                {
-                    _logger.Debug($"Cannot find blob {fileName}");
-                    return null;
-                }
-            }
+            var blob = await GetBlobReferenceAsync(fileName, true, cancellationToken);
 
             using (var stream = new MemoryStream())
             {
@@ -102,9 +42,46 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Publishers
                 stream.Position = 0;
                 using (var reader = new StreamReader(stream))
                 {
-                    return await reader.ReadToEndAsync();
+                    var jsonString = await reader.ReadToEndAsync();
+                    return JsonConvert.DeserializeObject<Publisher>(jsonString);
                 }
             }
+        }
+
+        public async Task UpdatePublisherAsync(Publisher publisher, CancellationToken cancellationToken)
+        {
+            var fileName = $"{publisher.Code}.json";
+            var blob = await GetBlobReferenceAsync(fileName, false, cancellationToken);
+
+            var content = JsonConvert.SerializeObject(publisher);
+            await blob.UploadTextAsync(content, cancellationToken);
+        }
+
+        private async Task<CloudBlockBlob> GetBlobReferenceAsync(string fileName, bool checkBlobExists, CancellationToken cancellationToken)
+        {
+            CloudBlockBlob blob;
+
+            if (!string.IsNullOrEmpty(_configuration.StorageFolderName))
+            {
+                var folder = _container.GetDirectoryReference(_configuration.StorageFolderName);
+                blob = folder.GetBlockBlobReference(fileName);
+                if (checkBlobExists && !await blob.ExistsAsync(cancellationToken))
+                {
+                    _logger.Debug($"Cannot find blob {fileName} in folder {_configuration.StorageFolderName}");
+                    return null;
+                }
+            }
+            else
+            {
+                blob = _container.GetBlockBlobReference(fileName);
+                if (checkBlobExists && !await blob.ExistsAsync(cancellationToken))
+                {
+                    _logger.Debug($"Cannot find blob {fileName}");
+                    return null;
+                }
+            }
+
+            return blob;
         }
     }
 }

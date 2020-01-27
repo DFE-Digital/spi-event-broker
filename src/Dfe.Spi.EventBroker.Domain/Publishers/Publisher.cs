@@ -1,3 +1,10 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NJsonSchema;
+
 namespace Dfe.Spi.EventBroker.Domain.Publishers
 {
     public class Publisher

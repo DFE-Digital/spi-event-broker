@@ -24,4 +24,8 @@
       <ProjectReference Include="..\Dfe.Spi.EventBroker.Domain\Dfe.Spi.EventBroker.Domain.csproj" />
       <ProjectReference Include="..\Dfe.Spi.EventBroker.Infrastructure.AzureStorage\Dfe.Spi.EventBroker.Infrastructure.AzureStorage.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <None Remove="Schemas\publish-events-body.json" />
+      <EmbeddedResource Include="Schemas\update-published-events-body.json" />
+    </ItemGroup>
 </Project>

@@ -8,6 +8,7 @@ using Dfe.Spi.EventBroker.Domain.Events;
 using Dfe.Spi.EventBroker.Domain.Publishers;
 using Dfe.Spi.EventBroker.Domain.Subscriptions;
 using Newtonsoft.Json.Linq;
+using NJsonSchema;
 
 namespace Dfe.Spi.EventBroker.Application.Receive
 {
@@ -102,8 +103,9 @@ namespace Dfe.Spi.EventBroker.Application.Receive
             {
                 throw new InvalidRequestException("EVENTNOTFOUND", $"Cannot find event {eventType} in publisher {source}");
             }
-            
-            var validationErrors = publisherEvent.Schema.Validate(jsonPayload);
+
+            var schema = await JsonSchema.FromJsonAsync(publisherEvent.Schema);
+            var validationErrors = schema.Validate(jsonPayload);
             if (validationErrors.Count > 0)
             {
                 var message = validationErrors.Select(ve => ve.ToString()).Aggregate((x, y) => $"{x}\n{y}");

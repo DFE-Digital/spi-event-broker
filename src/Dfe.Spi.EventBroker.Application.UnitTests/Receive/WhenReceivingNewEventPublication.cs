@@ -42,7 +42,7 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Receive
                         new PublisherEvent
                         {
                             Name = DefaultEventType,
-                            Schema = JsonSchema.FromJsonAsync(DefaultSchema).Result,
+                            Schema = DefaultSchema,
                         },
                     },
                 });

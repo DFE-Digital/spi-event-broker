@@ -6,6 +6,6 @@ namespace Dfe.Spi.EventBroker.Domain.Publishers
     {
         public string Name { get; set; }
         public string Description { get; set; }
-        public JsonSchema Schema { get; set; }
+        public string Schema { get; set; }
     }
 }

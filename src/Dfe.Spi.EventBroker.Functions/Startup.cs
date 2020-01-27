@@ -1,6 +1,7 @@
 using System.IO;
 using Dfe.Spi.Common.Logging;
 using Dfe.Spi.Common.Logging.Definitions;
+using Dfe.Spi.EventBroker.Application.Publishers;
 using Dfe.Spi.EventBroker.Application.Receive;
 using Dfe.Spi.EventBroker.Application.Send;
 using Dfe.Spi.EventBroker.Domain.Configuration;
@@ -88,6 +89,7 @@ namespace Dfe.Spi.EventBroker.Functions
         {
             services.AddScoped<IReceiveManager, ReceiveManager>();
             services.AddScoped<ISendManager, SendManager>();
+            services.AddScoped<IPublisherManager, PublisherManager>();
         }
 
         private void AddPublishers(IServiceCollection services)
