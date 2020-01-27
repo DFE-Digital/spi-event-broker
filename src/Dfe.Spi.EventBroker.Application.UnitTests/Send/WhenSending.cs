@@ -17,6 +17,7 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
 {
     public class WhenSending
     {
+        private Mock<IDistributionRepository> _distributionRepositoryMock;
         private Mock<IEventRepository> _eventRepositoryMock;
         private Mock<ISubscriptionRepository> _subscriptionRepositoryMock;
         private Mock<IRestClient> _restClientMock;
@@ -27,6 +28,17 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
         [SetUp]
         public void Arrange()
         {
+            _distributionRepositoryMock = new Mock<IDistributionRepository>();
+            _distributionRepositoryMock.Setup(r =>
+                    r.GetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((string id, string subscriptionId, CancellationToken cancellationToken) =>
+                    new Distribution
+                    {
+                        Id = id,
+                        SubscriptionId = subscriptionId,
+                        Status = DistributionStatus.Pending,
+                    });
+
             _eventRepositoryMock = new Mock<IEventRepository>();
             _eventRepositoryMock.Setup(r => r.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new Event());
@@ -47,6 +59,7 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
             _loggerMock = new Mock<ILoggerWrapper>();
 
             _manager = new SendManager(
+                _distributionRepositoryMock.Object,
                 _eventRepositoryMock.Object,
                 _subscriptionRepositoryMock.Object,
                 _restClientMock.Object,
@@ -55,9 +68,52 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
             _cancellationToken = new CancellationToken();
         }
 
+
+        [Test, AutoData]
+        public async Task ThenItShouldGetUpToDateDistributionFromRepository(Distribution distribution)
+        {
+            await _manager.SendAsync(distribution, _cancellationToken);
+
+            _distributionRepositoryMock.Verify(r =>
+                    r.GetAsync(distribution.Id, distribution.SubscriptionId, _cancellationToken),
+                Times.Once);
+        }
+
+        [Test, AutoData]
+        public async Task ThenItShouldAbandonProcessingIfDistributionAlreadySent(Distribution distribution)
+        {
+            _distributionRepositoryMock.Setup(r =>
+                    r.GetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Distribution
+                {
+                    Id = distribution.Id,
+                    SubscriptionId = distribution.SubscriptionId,
+                    EventId = distribution.EventId,
+                    Status = DistributionStatus.Sent,
+                    Attempts = 1,
+                });
+            
+            await _manager.SendAsync(distribution, _cancellationToken);
+            _subscriptionRepositoryMock.Verify(r => r.GetSubscriptionToEventAsync(It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<string>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+            _restClientMock.Verify(c => c.ExecuteTaskAsync(It.IsAny<IRestRequest>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
         [Test, AutoData]
         public async Task ThenItShouldGetEventForDistribution(Distribution distribution)
         {
+            _distributionRepositoryMock.Setup(r =>
+                    r.GetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Distribution
+                {
+                    Id = distribution.Id,
+                    SubscriptionId = distribution.SubscriptionId,
+                    EventId = distribution.EventId,
+                    Status = DistributionStatus.Pending,
+                });
+                
             await _manager.SendAsync(distribution, _cancellationToken);
 
             _eventRepositoryMock.Verify(r => r.GetAsync(distribution.EventId, _cancellationToken),
@@ -98,6 +154,19 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
         }
 
         [Test, AutoData]
+        public async Task ThenItShouldUpdateDistributionAsSent(Distribution distribution)
+        {
+            await _manager.SendAsync(distribution, _cancellationToken);
+            
+            _distributionRepositoryMock.Verify(r=>r.UpdateAsync(
+                It.Is<Distribution>(d=>
+                    d.Id == distribution.Id &&
+                    d.SubscriptionId == distribution.SubscriptionId &&
+                    d.Status == DistributionStatus.Sent), _cancellationToken),
+                Times.Once);
+        }
+
+        [Test, AutoData]
         public void ThenItShouldThrowAnExceptionIfNonSuccessResponseRecieved(Distribution distribution)
         {
             _restClientMock.Setup(c => c.ExecuteTaskAsync(It.IsAny<IRestRequest>(), It.IsAny<CancellationToken>()))
@@ -109,6 +178,60 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
 
             Assert.ThrowsAsync<Exception>(async () =>
                 await _manager.SendAsync(distribution, _cancellationToken));
+        }
+
+        [Test, AutoData]
+        public async Task ThenItShouldIncrementAttemptsAndSetStatusToPendingRetryOnFailure(Distribution distribution)
+        {
+            _restClientMock.Setup(c => c.ExecuteTaskAsync(It.IsAny<IRestRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RestResponse
+                {
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    ResponseStatus = ResponseStatus.Completed,
+                });
+
+            Assert.ThrowsAsync<Exception>(async () =>
+                await _manager.SendAsync(distribution, _cancellationToken));
+            
+            _distributionRepositoryMock.Verify(r=>r.UpdateAsync(
+                    It.Is<Distribution>(d=>
+                        d.Id == distribution.Id &&
+                        d.SubscriptionId == distribution.SubscriptionId &&
+                        d.Status == DistributionStatus.PendingRetry &&
+                        d.Attempts == 1), _cancellationToken),
+                Times.Once);
+        }
+
+        [Test, AutoData]
+        public async Task ThenItShouldSetStatusToFailedIfFithAttempt(Distribution distribution)
+        {
+            _restClientMock.Setup(c => c.ExecuteTaskAsync(It.IsAny<IRestRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RestResponse
+                {
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    ResponseStatus = ResponseStatus.Completed,
+                });
+            _distributionRepositoryMock.Setup(r =>
+                    r.GetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Distribution
+                {
+                    Id = distribution.Id,
+                    SubscriptionId = distribution.SubscriptionId,
+                    EventId = distribution.EventId,
+                    Status = DistributionStatus.PendingRetry,
+                    Attempts = 4,
+                });
+
+            Assert.ThrowsAsync<Exception>(async () =>
+                await _manager.SendAsync(distribution, _cancellationToken));
+            
+            _distributionRepositoryMock.Verify(r=>r.UpdateAsync(
+                    It.Is<Distribution>(d=>
+                        d.Id == distribution.Id &&
+                        d.SubscriptionId == distribution.SubscriptionId &&
+                        d.Status == DistributionStatus.Failed &&
+                        d.Attempts == 5), _cancellationToken),
+                Times.Once);
         }
     }
 }

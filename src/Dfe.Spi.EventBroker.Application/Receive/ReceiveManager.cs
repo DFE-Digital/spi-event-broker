@@ -64,6 +64,8 @@ namespace Dfe.Spi.EventBroker.Application.Receive
                     Id = Guid.NewGuid().ToString(),
                     SubscriptionId = subscription.Id,
                     EventId = eventId,
+                    Status = DistributionStatus.Pending,
+                    Attempts = 0,
                 };
                 await _distributionRepository.CreateAsync(distribution, cancellationToken);
                 _logger.Debug($"Created distribution with id {distribution.Id} for subscription {subscription.Id} to send event {eventId} ({source}.{eventType})");

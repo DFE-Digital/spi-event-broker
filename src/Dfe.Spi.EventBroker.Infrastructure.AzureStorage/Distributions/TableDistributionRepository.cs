@@ -16,8 +16,28 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Distributions
             var tableClient = storageAccount.CreateCloudTableClient();
             _table = tableClient.GetTableReference(configuration.StorageTableName);
         }
-        
+
+        public async Task<Distribution> GetAsync(string id, string subscriptionId, CancellationToken cancellationToken)
+        {
+            await _table.CreateIfNotExistsAsync(cancellationToken);
+
+            var operation = TableOperation.Retrieve<DistributionEntity>(subscriptionId, id);
+            var tableResult = await _table.ExecuteAsync(operation, cancellationToken);
+            return EntityToModel((DistributionEntity) tableResult.Result);
+        }
+
         public async Task CreateAsync(Distribution distribution, CancellationToken cancellationToken)
+        {
+            await InsertOrReplaceAsync(distribution, cancellationToken);
+        }
+
+        public async Task UpdateAsync(Distribution distribution, CancellationToken cancellationToken)
+        {
+            await InsertOrReplaceAsync(distribution, cancellationToken);
+        }
+
+
+        private async Task InsertOrReplaceAsync(Distribution distribution, CancellationToken cancellationToken)
         {
             await _table.CreateIfNotExistsAsync(cancellationToken);
 
@@ -34,6 +54,25 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Distributions
                 Id = distribution.Id,
                 SubscriptionId = distribution.SubscriptionId,
                 EventId = distribution.EventId,
+                Status = (int) distribution.Status,
+                Attempts = distribution.Attempts,
+            };
+        }
+
+        private Distribution EntityToModel(DistributionEntity entity)
+        {
+            if (entity == null)
+            {
+                return null;
+            }
+
+            return new Distribution
+            {
+                Id = entity.Id,
+                SubscriptionId = entity.SubscriptionId,
+                EventId = entity.EventId,
+                Status = (DistributionStatus) entity.Status,
+                Attempts = entity.Attempts,
             };
         }
     }

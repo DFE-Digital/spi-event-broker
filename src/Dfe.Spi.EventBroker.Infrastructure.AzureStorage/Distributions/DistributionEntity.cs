@@ -7,5 +7,7 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Distributions
         public string Id { get; set; }
         public string SubscriptionId { get; set; }
         public string EventId { get; set; }
+        public int Status { get; set; }
+        public int Attempts { get; set; }
     }
 }
