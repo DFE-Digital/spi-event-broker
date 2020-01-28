@@ -1,0 +1,66 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dfe.Spi.EventBroker.Functions", "Dfe.Spi.EventBroker.Functions\Dfe.Spi.EventBroker.Functions.csproj", "{FCE53027-852B-403A-A97B-F72E8D86A6E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dfe.Spi.EventBroker.Domain", "Dfe.Spi.EventBroker.Domain\Dfe.Spi.EventBroker.Domain.csproj", "{3A13E89D-26E8-445B-9015-A67318A5265B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{46D21F42-6621-4A6A-9973-4651356E6671}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dfe.Spi.EventBroker.Functions.UnitTests", "Dfe.Spi.EventBroker.Functions.UnitTests\Dfe.Spi.EventBroker.Functions.UnitTests.csproj", "{5790AD69-3579-43F4-A339-968E5EE1A405}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deploy", "Deploy", "{DCD83DB8-BD40-4C8C-ADFD-F8C1C2D1C6E1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{D9ED87E6-6A89-4545-A0CF-65A3DC24E0DA}"
+ProjectSection(SolutionItems) = preProject
+	..\pipelines\build.yml = ..\pipelines\build.yml
+EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Release", "Release", "{38AC5C9F-49D5-4670-A2C4-271E2D6854D0}"
+ProjectSection(SolutionItems) = preProject
+	..\azure\template.json = ..\azure\template.json
+EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dfe.Spi.EventBroker.Application", "Dfe.Spi.EventBroker.Application\Dfe.Spi.EventBroker.Application.csproj", "{06E4E0C1-5C49-4280-8E75-4979269F5607}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dfe.Spi.EventBroker.Infrastructure.AzureStorage", "Dfe.Spi.EventBroker.Infrastructure.AzureStorage\Dfe.Spi.EventBroker.Infrastructure.AzureStorage.csproj", "{36D1C641-3FE0-4BEA-9744-A9FBB0FDE8CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dfe.Spi.EventBroker.Application.UnitTests", "Dfe.Spi.EventBroker.Application.UnitTests\Dfe.Spi.EventBroker.Application.UnitTests.csproj", "{3AC1B402-F9CC-4371-B404-945CCE7D30BF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FCE53027-852B-403A-A97B-F72E8D86A6E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCE53027-852B-403A-A97B-F72E8D86A6E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCE53027-852B-403A-A97B-F72E8D86A6E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCE53027-852B-403A-A97B-F72E8D86A6E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A13E89D-26E8-445B-9015-A67318A5265B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A13E89D-26E8-445B-9015-A67318A5265B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A13E89D-26E8-445B-9015-A67318A5265B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A13E89D-26E8-445B-9015-A67318A5265B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5790AD69-3579-43F4-A339-968E5EE1A405}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5790AD69-3579-43F4-A339-968E5EE1A405}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5790AD69-3579-43F4-A339-968E5EE1A405}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5790AD69-3579-43F4-A339-968E5EE1A405}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06E4E0C1-5C49-4280-8E75-4979269F5607}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06E4E0C1-5C49-4280-8E75-4979269F5607}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06E4E0C1-5C49-4280-8E75-4979269F5607}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06E4E0C1-5C49-4280-8E75-4979269F5607}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36D1C641-3FE0-4BEA-9744-A9FBB0FDE8CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36D1C641-3FE0-4BEA-9744-A9FBB0FDE8CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36D1C641-3FE0-4BEA-9744-A9FBB0FDE8CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36D1C641-3FE0-4BEA-9744-A9FBB0FDE8CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AC1B402-F9CC-4371-B404-945CCE7D30BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AC1B402-F9CC-4371-B404-945CCE7D30BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AC1B402-F9CC-4371-B404-945CCE7D30BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AC1B402-F9CC-4371-B404-945CCE7D30BF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5790AD69-3579-43F4-A339-968E5EE1A405} = {46D21F42-6621-4A6A-9973-4651356E6671}
+		{D9ED87E6-6A89-4545-A0CF-65A3DC24E0DA} = {DCD83DB8-BD40-4C8C-ADFD-F8C1C2D1C6E1}
+		{38AC5C9F-49D5-4670-A2C4-271E2D6854D0} = {DCD83DB8-BD40-4C8C-ADFD-F8C1C2D1C6E1}
+		{3AC1B402-F9CC-4371-B404-945CCE7D30BF} = {46D21F42-6621-4A6A-9973-4651356E6671}
+	EndGlobalSection
+EndGlobal

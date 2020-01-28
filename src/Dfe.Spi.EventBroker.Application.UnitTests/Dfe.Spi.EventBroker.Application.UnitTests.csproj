@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AutoFixture.NUnit3" Version="4.11.0" />
+        <PackageReference Include="Dfe.Spi.Common.Logging" Version="1.0.9" />
+        <PackageReference Include="Moq" Version="4.13.1" />
+        <PackageReference Include="nunit" Version="3.11.0" />
+        <PackageReference Include="NUnit3TestAdapter" Version="3.11.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Dfe.Spi.EventBroker.Application\Dfe.Spi.EventBroker.Application.csproj" />
+      <ProjectReference Include="..\Dfe.Spi.EventBroker.Domain\Dfe.Spi.EventBroker.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

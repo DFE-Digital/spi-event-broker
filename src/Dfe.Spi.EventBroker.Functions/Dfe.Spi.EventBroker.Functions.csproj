@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <AzureFunctionsVersion>v2</AzureFunctionsVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Dfe.Spi.Common.Http.Server" Version="1.0.6" />
+        <PackageReference Include="Dfe.Spi.Common.Logging" Version="1.0.9" />
+        <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
+        <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="3.0.0" />
+        <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.29" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="host.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="local.settings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Dfe.Spi.EventBroker.Application\Dfe.Spi.EventBroker.Application.csproj" />
+      <ProjectReference Include="..\Dfe.Spi.EventBroker.Domain\Dfe.Spi.EventBroker.Domain.csproj" />
+      <ProjectReference Include="..\Dfe.Spi.EventBroker.Infrastructure.AzureStorage\Dfe.Spi.EventBroker.Infrastructure.AzureStorage.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="Schemas\publish-events-body.json" />
+      <EmbeddedResource Include="Schemas\update-published-events-body.json" />
+      <None Remove="Schemas\update-subscription-body.json" />
+      <EmbeddedResource Include="Schemas\update-subscription-body.json" />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "publisher": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eventType": {
+      "type": "string",
+      "minLength": 1
+    },
+    "endpointUrl": {
+      "type": "string",
+      "pattern": "https:\\/\\/.*\\..*"
+    }
+  },
+  "required": [
+    "publisher",
+    "eventType",
+    "endpointUrl"
+  ]
+}

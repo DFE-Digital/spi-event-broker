@@ -1,0 +1,190 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serviceIdentifier": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 4
+    },
+    "appName": {
+      "type": "string",
+      "maxLength": 8
+    },
+    "environment": {
+      "type": "string",
+      "defaultValue": "d",
+      "allowedValues": [ "d", "t", "p" ]
+    },
+    "environmentName": {
+      "type": "string",
+      "defaultValue": "DEV",
+      "allowedValues": [ "DEV", "TEST", "OAT", "PROD" ]
+    },
+    "environmentInstance": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "defaultValue": "01"
+    },
+    "appInsightsInstance": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "defaultValue": "01"
+    }
+  },
+  "variables": {
+    "namePrefix": "[concat(parameters('serviceIdentifier'), parameters('environment'), parameters('environmentInstance'))]",
+    "storageAccountName": "[toLower(concat(variables('namePrefix'), parameters('appName')))]",
+    "storageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+    "servicePlanName": "[concat(variables('namePrefix'), '-', parameters('appName'), '-asp-01')]",
+    "functionAppName": "[concat(variables('namePrefix'), '-', parameters('appName'), '-fa-01')]",
+    "appInsightsName": "[concat(variables('namePrefix'), '-ai-', parameters('appInsightsInstance'))]",
+    "sharedResourceGroupName": "[concat(variables('namePrefix'), '-shared')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountName')]",
+      "apiVersion": "2019-04-01",
+      "location": "[resourceGroup().location]",
+      "kind": "Storage",
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "properties": {
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "services": {
+            "file": {
+              "enabled": true
+            },
+            "blob": {
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        }
+      },
+      "tags": {
+        "environment": "[parameters('environmentName')]",
+        "app": "[parameters('appName')]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2018-02-01",
+      "name": "[variables('servicePlanName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Y1",
+        "tier": "Dynamic"
+      },
+      "kind": "functionapp",
+      "properties": {
+        "name": "[variables('servicePlanName')]",
+        "computeMode": "Dynamic"
+      },
+      "tags": {
+        "environment": "[parameters('environmentName')]",
+        "app": "[parameters('appName')]"
+      }
+    },
+    {
+      "apiVersion": "2016-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "[variables('functionAppName')]",
+      "location": "[resourceGroup().location]",
+      "kind": "functionapp",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('servicePlanName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('servicePlanName'))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "AzureWebJobsDashboard",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[toLower(variables('functionAppName'))]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~2"
+            },
+            {
+              "name": "WEBSITE_NODE_DEFAULT_VERSION",
+              "value": "8.11.1"
+            },
+            {
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "dotnet"
+            },
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId(variables('sharedResourceGroupName'), 'microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "SPI_Publisher__StorageConnectionString",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "SPI_Publisher__StorageContainerName",
+              "value": "publishers"
+            },
+            {
+              "name": "SPI_Publisher__StorageFolderName",
+              "value": ""
+            },
+            {
+              "name": "SPI_Event__StorageConnectionString",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "SPI_Event__StorageContainerName",
+              "value": "events"
+            },
+            {
+              "name": "SPI_Event__StorageFolderName",
+              "value": ""
+            },
+            {
+              "name": "SPI_Distribution__StorageConnectionString",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "SPI_Distribution__StorageTableName",
+              "value": "distributions"
+            },
+            {
+              "name": "SPI_Subscription__StorageConnectionString",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "SPI_Subscription__StorageTableName",
+              "value": "subscriptions"
+            }
+          ]
+        }
+      },
+      "tags": {
+        "environment": "[parameters('environmentName')]",
+        "app": "[parameters('appName')]"
+      }
+    }
+  ]
+}
