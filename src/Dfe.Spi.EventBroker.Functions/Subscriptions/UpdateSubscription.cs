@@ -45,7 +45,7 @@ namespace Dfe.Spi.EventBroker.Functions.Subscriptions
         {
             return new HttpErrorBodyResult(
                 HttpStatusCode.BadRequest,
-                "NOTJSON",
+                "SPI-EVBK-NOTJSON",
                 "The supplied body was either empty, or not well-formed JSON.");
         }
 
@@ -53,7 +53,7 @@ namespace Dfe.Spi.EventBroker.Functions.Subscriptions
         {
             return new HttpErrorBodyResult(
                 HttpStatusCode.BadRequest,
-                "INVALIDREQUEST",
+                "SPI-EVBK-INVALIDREQUEST",
                 $"The supplied body was well-formed JSON but it failed validation: {message}");
         }
 
