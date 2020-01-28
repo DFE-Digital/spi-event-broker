@@ -78,7 +78,7 @@ namespace Dfe.Spi.EventBroker.Application.Send
             _logger.Debug($"Sending event {@event.Id} to subscriber {subscription.Id} at {subscription.EndpointUrl}");
             var request = new RestRequest(subscription.EndpointUrl, Method.POST);
             request.AddParameter(string.Empty, @event.Payload, "application/json", ParameterType.RequestBody);
-            var response = await _restClient.ExecuteTaskAsync(request, cancellationToken);
+            var response = await _restClient.ExecuteAsync(request, Method.POST, cancellationToken);
             if (!response.IsSuccessful)
             {
                 throw new Exception($"Error sending event {@event.Id} to subscriber {subscription.Id} at {subscription.EndpointUrl} " +
