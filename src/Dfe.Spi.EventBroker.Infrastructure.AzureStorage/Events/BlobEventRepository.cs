@@ -48,6 +48,8 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Events
         {
             CloudBlockBlob blob;
 
+            await _container.CreateIfNotExistsAsync(cancellationToken);
+
             if (!string.IsNullOrEmpty(_configuration.StorageFolderName))
             {
                 var folder = _container.GetDirectoryReference(_configuration.StorageFolderName);
