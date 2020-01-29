@@ -36,6 +36,8 @@ namespace Dfe.Spi.EventBroker.Functions.Publishers
             HttpRequest req,
             CancellationToken cancellationToken)
         {
+            _logger.SetContext(req.Headers);
+            
             var rootObject = await ReadAndValidateRequestAsync(req);
 
             var publisher = ConvertJsonToPublisher(rootObject);
