@@ -40,6 +40,7 @@
     "storageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
     "servicePlanName": "[concat(variables('namePrefix'), '-', parameters('appName'), '-asp-01')]",
     "functionAppName": "[concat(variables('namePrefix'), '-', parameters('appName'), '-fa-01')]",
+    "functionAppId": "[concat(resourceGroup().id,'/providers/','Microsoft.Web/sites/', variables('functionAppName'))]",
     "appInsightsName": "[concat(variables('namePrefix'), '-ai-', parameters('appInsightsInstance'))]",
     "sharedResourceGroupName": "[concat(variables('namePrefix'), '-shared')]"
   },
@@ -186,5 +187,11 @@
         "app": "[parameters('appName')]"
       }
     }
-  ]
+  ],
+  "outputs": {
+    "functionAppKey": {
+      "value": "[listkeys(concat(variables('functionAppId'), '/host/default/'),'2016-08-01').functionKeys.default]",
+      "type": "string"
+    }
+  }
 }
