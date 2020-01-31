@@ -1,0 +1,266 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Event Broker API",
+    "version": "2.0",
+    "description": "SPI middleware component: provides pub/sub via HTTP."
+  },
+  "host": "__function_app_host__",
+  "paths": {
+    
+    
+    "/events": {
+      "post": {
+        "description": "Create or update published events",
+        "operationId": "upsert-events",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "Events definition",
+            "description": "A JSON payload containing the definition of the events for a publisher",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/upsert-events-request"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "Bearer token authentication.",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "X-Internal-Request-Id",
+            "description": "An internal request id. Should be a vaild guid.",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "X-External-Request-Id",
+            "description": "An optional external request id. Used in logging.",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "The event definitions have been created or updated",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "The events definition was not valid",
+            "schema": {
+              "$ref": "#/definitions/http-error-body"
+            }
+          },
+          "500": {
+            "description": "There was a problem with the request - and this could be different things depending on the context. See body of response for more detail.",
+            "schema": {
+              "$ref": "#/definitions/http-error-body"
+            }
+          }
+        }
+      }
+    },
+    "/subscriptions": {
+      "post": {
+        "description": "Create or update subscription to event",
+        "operationId": "upsert-subscription",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "Subscription properties",
+            "description": "A JSON payload containing the definition of the subscription",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/upsert-subscription-request"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "Bearer token authentication.",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "X-Internal-Request-Id",
+            "description": "An internal request id. Should be a vaild guid.",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "X-External-Request-Id",
+            "description": "An optional external request id. Used in logging.",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "The subscription definitions have been created or updated",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "The subscription definition was not valid",
+            "schema": {
+              "$ref": "#/definitions/http-error-body"
+            }
+          },
+          "500": {
+            "description": "There was a problem with the request - and this could be different things depending on the context. See body of response for more detail.",
+            "schema": {
+              "$ref": "#/definitions/http-error-body"
+            }
+          }
+        }
+      }
+    },
+    "/publish/{source}/{eventType}": {
+      "post": {
+        "description": "Receives an event publication from external systems for distribution to subscribers",
+        "operationId": "publish-event",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source",
+            "type": "string",
+            "description": "The publishing event source (must have been defined by calling /event)",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "eventType",
+            "type": "string",
+            "description": "The type of event being published from the source (must have been defined by calling /event)",
+            "required": true
+          },
+          {
+            "in": "body",
+            "name": "Event Request",
+            "description": "A JSON payload containing the event data",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "Bearer token authentication.",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "X-Internal-Request-Id",
+            "description": "An internal request id. Should be a vaild guid.",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "X-External-Request-Id",
+            "description": "An optional external request id. Used in logging.",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted the event and will be distributed to subscribers",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "The source was not valid, the event type was not valid or event payload does not conform to the schema of the event",
+            "schema": {
+              "$ref": "#/definitions/http-error-body"
+            }
+          },
+          "500": {
+            "description": "There was a problem with the request - and this could be different things depending on the context. See body of response for more detail.",
+            "schema": {
+              "$ref": "#/definitions/http-error-body"
+            }
+          }
+        }
+      }
+    },
+    
+    "/HeartBeat": {
+      "get": {
+        "description": "Standard diagnostics method, used to test the health of the facade's underlying system.",
+        "operationId": "heart-beat",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "Bearer token authentication.",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The standard/only response from the method."
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "http-error-body": {
+      "type": "object",
+      "properties": {
+        "errorIdentifier": {
+          "type": "string",
+          "description": "An error identifier.",
+          "example": "SPI-ESQ-4"
+        },
+        "message": {
+          "type": "string",
+          "description": "A message describing the error.",
+          "example": "Unable to serve any requests - all adapters are unavailable."
+        },
+        "statusCode": {
+          "type": "integer",
+          "description": "The status code thrown with the error.",
+          "example": 424
+        }
+      }
+    },
+    "upsert-events-request": {
+      "type": "object"
+    },
+    "upsert-subscription": {
+      "type": "object",
+      "properties": {
+        "publisher": {
+          "type": "string",
+          "minLength": 1
+        },
+        "eventType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "endpointUrl": {
+          "type": "string",
+          "pattern": "https:\\/\\/.*\\..*"
+        }
+      },
+      "required": [
+        "publisher",
+        "eventType",
+        "endpointUrl"
+      ]
+    }
+  }
+}
