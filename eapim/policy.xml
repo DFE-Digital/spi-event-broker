@@ -14,7 +14,7 @@
         </validate-jwt>
 
         <set-header name="X-Functions-Key" exists-action="skip">
-            <value>{{squasher-function-app-key}}</value>
+            <value>{{eventbroker-function-app-key}}</value>
         </set-header>
 
     </inbound>
