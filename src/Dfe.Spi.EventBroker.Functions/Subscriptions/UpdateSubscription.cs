@@ -62,6 +62,7 @@ namespace Dfe.Spi.EventBroker.Functions.Subscriptions
         {
             var subscription = new Subscription
             {
+                Id = request.SubscriptionId,
                 Publisher = request.Publisher,
                 EventType = request.EventType,
                 EndpointUrl = request.EndpointUrl,
@@ -74,6 +75,7 @@ namespace Dfe.Spi.EventBroker.Functions.Subscriptions
 
     public class UpdateSubscriptionRequest : RequestResponseBase
     {
+        public string SubscriptionId { get; set; }
         public string Publisher { get; set; }
         public string EventType { get; set; }
         public string EndpointUrl { get; set; }

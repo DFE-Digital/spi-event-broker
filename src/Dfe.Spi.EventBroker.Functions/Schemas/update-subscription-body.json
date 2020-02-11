@@ -1,5 +1,9 @@
 {
   "properties": {
+    "subscriptionId": {
+      "type": "string",
+      "pattern": "^[a-zA-z0-9]{8}\\-[a-zA-z0-9]{4}\\-[a-zA-z0-9]{4}\\-[a-zA-z0-9]{4}\\-[a-zA-z0-9]{12}$"
+    },
     "publisher": {
       "type": "string",
       "minLength": 1

@@ -15,6 +15,7 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests
                 new JsonSerializerSettings
                 {
                     ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                    NullValueHandling = NullValueHandling.Ignore,
                 });
             return new DefaultHttpRequest(new DefaultHttpContext())
             {
