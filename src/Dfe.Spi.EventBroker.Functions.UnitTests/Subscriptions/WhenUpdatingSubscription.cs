@@ -54,11 +54,13 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Subscriptions
             Assert.IsInstanceOf<AcceptedResult>(actual);
         }
 
-        [Test]
-        public async Task ThenItShouldCallManagerWithSubscriptionDetails()
+        [TestCase(null)]
+        [TestCase("1c93fb13-6e9f-4bad-8195-d9c59b533852")]
+        public async Task ThenItShouldCallManagerWithSubscriptionDetails(string subscriptionId)
         {
             var request = new UpdateSubscriptionRequest
             {
+                SubscriptionId = subscriptionId,
                 Publisher = _fixture.Create<string>(),
                 EventType = _fixture.Create<string>(),
                 EndpointUrl = _fixture.Create<Uri>().ToString(),
@@ -69,6 +71,7 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Subscriptions
 
             _subscriptionManagerMock.Verify(m => m.UpdateSubscriptionAsync(
                     It.Is<Subscription>(s =>
+                        s.Id == subscriptionId &&
                         s.Publisher == request.Publisher &&
                         s.EventType == request.EventType &&
                         s.EndpointUrl == request.EndpointUrl), _cancellationToken),
