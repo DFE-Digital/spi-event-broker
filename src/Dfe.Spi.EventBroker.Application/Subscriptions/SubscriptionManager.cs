@@ -35,6 +35,7 @@ namespace Dfe.Spi.EventBroker.Application.Subscriptions
                 _logger.Debug($"No subscription id provided. Set to {subscription.Id}");
             }
 
+            _logger.Info($"Storing subscription for {subscription.Publisher}.{subscription.EventType} with id {subscription.Id}");
             await _subscriptionRepository.UpdateSubscriptionAsync(subscription, cancellationToken);
             _logger.Info($"Stored subscription {subscription.Id}");
 

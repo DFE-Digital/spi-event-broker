@@ -57,6 +57,8 @@ namespace Dfe.Spi.EventBroker.Infrastructure.AzureStorage.Subscriptions
 
         public async Task UpdateSubscriptionAsync(Subscription subscription, CancellationToken cancellationToken)
         {
+            await _table.CreateIfNotExistsAsync(cancellationToken);
+            
             var operation = TableOperation.InsertOrReplace(ModelToEntity(subscription));
             await _table.ExecuteAsync(operation, cancellationToken);
         }
