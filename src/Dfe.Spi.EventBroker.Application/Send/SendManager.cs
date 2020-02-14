@@ -1,7 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Dfe.Spi.Common.Http;
+using Dfe.Spi.Common.Http.Client;
 using Dfe.Spi.Common.Logging.Definitions;
+using Dfe.Spi.EventBroker.Domain.Configuration;
 using Dfe.Spi.EventBroker.Domain.Distributions;
 using Dfe.Spi.EventBroker.Domain.Events;
 using Dfe.Spi.EventBroker.Domain.Subscriptions;
@@ -27,6 +30,7 @@ namespace Dfe.Spi.EventBroker.Application.Send
             IEventRepository eventRepository,
             ISubscriptionRepository subscriptionRepository,
             IRestClient restClient,
+            AuthenticationConfiguration authenticationConfiguration,
             ILoggerWrapper logger)
         {
             _distributionRepository = distributionRepository;
@@ -34,6 +38,13 @@ namespace Dfe.Spi.EventBroker.Application.Send
             _subscriptionRepository = subscriptionRepository;
             _restClient = restClient;
             _logger = logger;
+            
+            _restClient.Authenticator = new OAuth2ClientCredentialsAuthenticator(
+                authenticationConfiguration.TokenEndpoint,
+                authenticationConfiguration.ClientId,
+                authenticationConfiguration.ClientSecret,
+                authenticationConfiguration.Resource);
+            _restClient.DefaultParameters.Add(new Parameter(CommonHeaderNames.EapimSubscriptionKeyHeaderName, authenticationConfiguration.SubscriptionKey, ParameterType.HttpHeader));
         }
         
         public async Task SendAsync(Distribution distribution, CancellationToken cancellationToken)
@@ -78,7 +89,7 @@ namespace Dfe.Spi.EventBroker.Application.Send
             _logger.Debug($"Sending event {@event.Id} to subscriber {subscription.Id} at {subscription.EndpointUrl}");
             var request = new RestRequest(subscription.EndpointUrl, Method.POST);
             request.AddParameter(string.Empty, @event.Payload, "application/json", ParameterType.RequestBody);
-            var response = await _restClient.ExecuteAsync(request, Method.POST, cancellationToken);
+            var response = await _restClient.ExecuteTaskAsync(request, cancellationToken);
             if (!response.IsSuccessful)
             {
                 throw new Exception($"Error sending event {@event.Id} to subscriber {subscription.Id} at {subscription.EndpointUrl} " +
