@@ -79,6 +79,7 @@ namespace Dfe.Spi.EventBroker.Functions
             services.AddSingleton(_configuration.Event);
             services.AddSingleton(_configuration.Distribution);
             services.AddSingleton(_configuration.Subscription);
+            services.AddSingleton(_configuration.Authentication);
         }
 
         private void AddLogging(IServiceCollection services)

@@ -32,6 +32,21 @@
       "minLength": 2,
       "maxLength": 2,
       "defaultValue": "01"
+    },
+    "oauthTokenEndpoint": {
+      "type": "string"
+    },
+    "oauthClientId": {
+      "type": "string"
+    },
+    "oauthClientSecret": {
+      "type": "securestring"
+    },
+    "oauthResource": {
+      "type": "string"
+    },
+    "eapimSubscriptionKey": {
+      "type": "securestring"
     }
   },
   "variables": {
@@ -178,6 +193,26 @@
             {
               "name": "SPI_Subscription__StorageTableName",
               "value": "subscriptions"
+            },
+            {
+              "name": "SPI_Authentication__TokenEndpoint",
+              "value": "[parameters('oauthTokenEndpoint')]"
+            },
+            {
+              "name": "SPI_Authentication__ClientId",
+              "value": "[parameters('oauthClientId')]"
+            },
+            {
+              "name": "SPI_Authentication__ClientSecret",
+              "value": "[parameters('oauthClientSecret')]"
+            },
+            {
+              "name": "SPI_Authentication__Resource",
+              "value": "[parameters('oauthResource')]"
+            },
+            {
+              "name": "SPI_Authentication__SubscriptionKey",
+              "value": "[parameters('eapimSubscriptionKey')]"
             }
           ]
         }

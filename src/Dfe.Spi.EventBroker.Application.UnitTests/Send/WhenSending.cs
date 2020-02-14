@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 using AutoFixture.NUnit3;
 using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Send;
+using Dfe.Spi.EventBroker.Domain.Configuration;
 using Dfe.Spi.EventBroker.Domain.Distributions;
 using Dfe.Spi.EventBroker.Domain.Events;
 using Dfe.Spi.EventBroker.Domain.Subscriptions;
@@ -21,6 +23,7 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
         private Mock<IEventRepository> _eventRepositoryMock;
         private Mock<ISubscriptionRepository> _subscriptionRepositoryMock;
         private Mock<IRestClient> _restClientMock;
+        private AuthenticationConfiguration _authenticationConfiguration;
         private Mock<ILoggerWrapper> _loggerMock;
         private SendManager _manager;
         private CancellationToken _cancellationToken;
@@ -49,12 +52,16 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
                 .ReturnsAsync(new Subscription());
 
             _restClientMock = new Mock<IRestClient>();
-            _restClientMock.Setup(c => c.ExecuteAsync(It.IsAny<IRestRequest>(), It.IsAny<Method>(), It.IsAny<CancellationToken>()))
+            _restClientMock.Setup(c => c.ExecuteTaskAsync(It.IsAny<IRestRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new RestResponse
                 {
                     StatusCode = HttpStatusCode.OK,
                     ResponseStatus = ResponseStatus.Completed,
                 });
+            _restClientMock.Setup(c => c.DefaultParameters)
+                .Returns(new List<Parameter>());
+            
+            _authenticationConfiguration = new AuthenticationConfiguration();
 
             _loggerMock = new Mock<ILoggerWrapper>();
 
@@ -63,6 +70,7 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
                 _eventRepositoryMock.Object,
                 _subscriptionRepositoryMock.Object,
                 _restClientMock.Object,
+                _authenticationConfiguration,
                 _loggerMock.Object);
 
             _cancellationToken = new CancellationToken();
@@ -145,11 +153,10 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
 
             await _manager.SendAsync(distribution, _cancellationToken);
 
-            _restClientMock.Verify(c => c.ExecuteAsync(It.Is<RestRequest>(r =>
+            _restClientMock.Verify(c => c.ExecuteTaskAsync(It.Is<RestRequest>(r =>
                         r.Method == Method.POST &&
                         r.Resource == subscription.EndpointUrl &&
-                        r.Parameters.Single(p => p.Type == ParameterType.RequestBody).Value == @event.Payload),
-                    Method.POST,
+                        (string)r.Parameters.Single(p => p.Type == ParameterType.RequestBody).Value == @event.Payload),
                     _cancellationToken),
                 Times.Once);
         }
@@ -170,7 +177,7 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
         [Test, AutoData]
         public void ThenItShouldThrowAnExceptionIfNonSuccessResponseRecieved(Distribution distribution)
         {
-            _restClientMock.Setup(c => c.ExecuteAsync(It.IsAny<IRestRequest>(), It.IsAny<Method>(), It.IsAny<CancellationToken>()))
+            _restClientMock.Setup(c => c.ExecuteTaskAsync(It.IsAny<IRestRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new RestResponse
                 {
                     StatusCode = HttpStatusCode.InternalServerError,
@@ -182,9 +189,9 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
         }
 
         [Test, AutoData]
-        public async Task ThenItShouldIncrementAttemptsAndSetStatusToPendingRetryOnFailure(Distribution distribution)
+        public void ThenItShouldIncrementAttemptsAndSetStatusToPendingRetryOnFailure(Distribution distribution)
         {
-            _restClientMock.Setup(c => c.ExecuteAsync(It.IsAny<IRestRequest>(), It.IsAny<Method>(), It.IsAny<CancellationToken>()))
+            _restClientMock.Setup(c => c.ExecuteTaskAsync(It.IsAny<IRestRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new RestResponse
                 {
                     StatusCode = HttpStatusCode.InternalServerError,
@@ -204,9 +211,9 @@ namespace Dfe.Spi.EventBroker.Application.UnitTests.Send
         }
 
         [Test, AutoData]
-        public async Task ThenItShouldSetStatusToFailedIfFithAttempt(Distribution distribution)
+        public void ThenItShouldSetStatusToFailedIfFithAttempt(Distribution distribution)
         {
-            _restClientMock.Setup(c => c.ExecuteAsync(It.IsAny<IRestRequest>(), It.IsAny<Method>(), It.IsAny<CancellationToken>()))
+            _restClientMock.Setup(c => c.ExecuteTaskAsync(It.IsAny<IRestRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new RestResponse
                 {
                     StatusCode = HttpStatusCode.InternalServerError,

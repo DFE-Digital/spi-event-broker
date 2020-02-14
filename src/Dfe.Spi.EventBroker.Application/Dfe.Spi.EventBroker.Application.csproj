@@ -9,8 +9,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Dfe.Spi.Common.Http" Version="1.0.1" />
+      <PackageReference Include="Dfe.Spi.Common.Http.Client" Version="1.0.7" />
       <PackageReference Include="Dfe.Spi.Common.Logging" Version="1.0.9" />
-      <PackageReference Include="RestSharp" Version="106.10.1" />
+      <PackageReference Include="RestSharp" Version="106.6.10" />
     </ItemGroup>
 
 </Project>
