@@ -4,15 +4,6 @@
 
         <base />
 
-        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
-            <openid-config url="{{oauth-eapim-config-url}}" />
-            <required-claims>
-                <claim name="aud">
-                    <value>{{oauth-spi-aud-claim}}</value>
-                </claim>
-            </required-claims>
-        </validate-jwt>
-
         <set-header name="X-Functions-Key" exists-action="skip">
             <value>{{eventbroker-function-app-key}}</value>
         </set-header>
