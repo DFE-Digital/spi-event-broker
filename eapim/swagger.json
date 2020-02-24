@@ -6,9 +6,7 @@
     "description": "SPI middleware component: provides pub/sub via HTTP."
   },
   "host": "__function_app_host__",
-  "paths": {
-    
-    
+  "paths": { 
     "/events": {
       "post": {
         "description": "Create or update published events",
