@@ -48,21 +48,43 @@
     "eapimSubscriptionKey": {
       "type": "securestring"
     },
+    "vNetInstance": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "defaultValue": "01"
+    },
+    "subnetInstance": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "defaultValue": "01"
+    },
     "eapimIp": {
       "type": "string",
       "minLength": 7,
       "maxLength": 15
+    },
+    "servicePlanInstance": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "defaultValue": "01"
     }
   },
   "variables": {
     "namePrefix": "[concat(parameters('serviceIdentifier'), parameters('environment'), parameters('environmentInstance'))]",
     "storageAccountName": "[toLower(concat(variables('namePrefix'), parameters('appName')))]",
     "storageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-    "servicePlanName": "[concat(variables('namePrefix'), '-', parameters('appName'), '-asp-01')]",
     "functionAppName": "[concat(variables('namePrefix'), '-', parameters('appName'), '-fa-01')]",
     "functionAppId": "[concat(resourceGroup().id,'/providers/','Microsoft.Web/sites/', variables('functionAppName'))]",
     "appInsightsName": "[concat(variables('namePrefix'), '-ai-', parameters('appInsightsInstance'))]",
-    "sharedResourceGroupName": "[concat(variables('namePrefix'), '-shared')]"
+    "sharedResourceGroupName": "[concat(variables('namePrefix'), '-shared')]",
+    "servicePlanName": "[concat(variables('namePrefix'), '-shared-asp-', parameters('servicePlanInstance'))]",
+    "corePrefix": "[concat(variables('namePrefix'), '-core')]",
+    "vNetName": "[concat(concat(variables('corePrefix'), '-vn-'), parameters('vNetInstance'))]",
+    "subnetName": "[concat(concat(variables('corePrefix'), '-sn-'), parameters('subnetInstance'))]",
+    "subnetId": "[resourceId(variables('corePrefix'), 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
   },
   "resources": [
     {
@@ -95,36 +117,16 @@
       }
     },
     {
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-02-01",
-      "name": "[variables('servicePlanName')]",
-      "location": "[resourceGroup().location]",
-      "sku": {
-        "name": "Y1",
-        "tier": "Dynamic"
-      },
-      "kind": "functionapp",
-      "properties": {
-        "name": "[variables('servicePlanName')]",
-        "computeMode": "Dynamic"
-      },
-      "tags": {
-        "environment": "[parameters('environmentName')]",
-        "app": "[parameters('appName')]"
-      }
-    },
-    {
       "apiVersion": "2018-11-01",
       "type": "Microsoft.Web/sites",
       "name": "[variables('functionAppName')]",
       "location": "[resourceGroup().location]",
       "kind": "functionapp",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('servicePlanName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
       ],
       "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('servicePlanName'))]",
+        "serverFarmId": "[resourceId(variables('sharedResourceGroupName'), 'Microsoft.Web/serverfarms', variables('servicePlanName'))]",
         "siteConfig": {
           "appSettings": [
             {
@@ -154,6 +156,10 @@
             {
               "name": "FUNCTIONS_WORKER_RUNTIME",
               "value": "dotnet"
+            },
+            {
+              "name": "WEBSITE_VNET_ROUTE_ALL",
+              "value": "1"
             },
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
@@ -230,6 +236,20 @@
           ]
         }
       },
+      "resources": [
+        {
+          "apiVersion": "2016-08-01",
+          "type": "Microsoft.Web/sites/networkConfig",
+          "name": "[concat(variables('functionAppName'), '/VirtualNetwork')]",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.Web/sites/', variables('functionAppName'))]"
+          ],
+          "properties": {
+            "subnetResourceId": "[variables('subnetId')]"
+          }
+        }
+      ],
       "tags": {
         "environment": "[parameters('environmentName')]",
         "app": "[parameters('appName')]"
