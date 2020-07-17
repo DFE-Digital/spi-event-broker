@@ -14,11 +14,16 @@ variables:
   buildPlatform: 'any cpu'
 
 steps:
+  - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '2.2.x'
+
   - task: NuGetToolInstaller@1
     displayName: 'Use NuGet 5.1.0'
     inputs:
       versionSpec: '5.1.0'
-      
+
   - task: NuGetCommand@2
     displayName: 'Restore NuGet Packages'
     inputs:
@@ -47,7 +52,7 @@ steps:
       publishWebProjects: false
       projects: 'src/Dfe.Spi.EventBroker.Functions/Dfe.Spi.EventBroker.Functions.csproj'
       arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/publish --no-restore --no-build'
-  
+
   - task: CopyFiles@2
     displayName: 'Copy ARM template'
     inputs:
@@ -55,7 +60,7 @@ steps:
         azure/*
       TargetFolder: '$(build.artifactstagingdirectory)/publish'
       OverWrite: true
-  
+
   - task: CopyFiles@2
     displayName: 'Copy EAPIM files'
     inputs:
