@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture.NUnit3;
+using Dfe.Spi.Common.Http.Server;
+using Dfe.Spi.Common.Http.Server.Definitions;
 using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Send;
 using Dfe.Spi.EventBroker.Domain.Distributions;
@@ -16,6 +18,7 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Send
     {
         private Mock<ISendManager> _sendManagerMock;
         private Mock<ILoggerWrapper> _loggerMock;
+        private Mock<IHttpSpiExecutionContextManager> _httpSpiExecutionContextManagerMock;
         private SendDistributionToSubscriber _function;
         private CancellationToken _cancellationToken;
 
@@ -25,10 +28,11 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Send
             _sendManagerMock = new Mock<ISendManager>();
             
             _loggerMock = new Mock<ILoggerWrapper>();
-            
+            _httpSpiExecutionContextManagerMock = new Mock<IHttpSpiExecutionContextManager>();
             _function = new SendDistributionToSubscriber(
                 _sendManagerMock.Object,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _httpSpiExecutionContextManagerMock.Object);
             
             _cancellationToken = new CancellationToken();
         }
@@ -37,8 +41,8 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Send
         public async Task ThenItShouldSetupLogger(Distribution distribution)
         {
             await _function.RunAsync(JsonConvert.SerializeObject(distribution), _cancellationToken);
-            
-            _loggerMock.Verify(l=>l.SetInternalRequestId(It.IsAny<Guid>()),
+
+            _httpSpiExecutionContextManagerMock.Verify(l=>l.SetInternalRequestId(It.IsAny<Guid>()),
                 Times.Once);
         }
 

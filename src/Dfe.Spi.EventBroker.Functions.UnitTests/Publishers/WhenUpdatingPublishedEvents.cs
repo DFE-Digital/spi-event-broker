@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture.NUnit3;
+using Dfe.Spi.Common.Http.Server.Definitions;
 using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Publishers;
 using Dfe.Spi.EventBroker.Domain.Publishers;
@@ -20,6 +21,7 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Publishers
     {
         private Mock<IPublisherManager> _publisherManagerMock;
         private Mock<ILoggerWrapper> _loggerMock;
+        private Mock<IHttpSpiExecutionContextManager> _httpSpiExecutionContextManagerMock;
         private UpdatePublishedEvents _function;
         private CancellationToken _cancellationToken;
 
@@ -29,10 +31,12 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Publishers
             _publisherManagerMock = new Mock<IPublisherManager>();
 
             _loggerMock = new Mock<ILoggerWrapper>();
+            _httpSpiExecutionContextManagerMock = new Mock<IHttpSpiExecutionContextManager>();
 
             _function = new UpdatePublishedEvents(
                 _publisherManagerMock.Object,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _httpSpiExecutionContextManagerMock.Object);
 
             _cancellationToken = new CancellationToken();
         }

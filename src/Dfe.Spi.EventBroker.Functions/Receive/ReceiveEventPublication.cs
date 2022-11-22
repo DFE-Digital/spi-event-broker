@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
+using Dfe.Spi.Common.Http.Server.Definitions;
 
 namespace Dfe.Spi.EventBroker.Functions.Receive
 {
@@ -16,13 +17,17 @@ namespace Dfe.Spi.EventBroker.Functions.Receive
     {
         private readonly IReceiveManager _receiveManager;
         private readonly ILoggerWrapper _logger;
+        private readonly IHttpSpiExecutionContextManager _httpSpiExecutionContextManager;
+
 
         public ReceiveEventPublication(
             IReceiveManager receiveManager,
-            ILoggerWrapper logger)
+            ILoggerWrapper logger,
+            IHttpSpiExecutionContextManager httpSpiExecutionContextManager)
         {
             _receiveManager = receiveManager;
             _logger = logger;
+            _httpSpiExecutionContextManager = httpSpiExecutionContextManager;
         }
 
         [FunctionName("ReceiveEventPublication")]
@@ -33,8 +38,8 @@ namespace Dfe.Spi.EventBroker.Functions.Receive
             string eventType,
             CancellationToken cancellationToken)
         {
-            _logger.SetContext(req.Headers);
             
+            _httpSpiExecutionContextManager.SetContext(req.Headers);
             _logger.Info($"Received event publication for {source}.{eventType}");
 
             string payload;

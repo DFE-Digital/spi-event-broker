@@ -1,4 +1,7 @@
 using System.IO;
+using Dfe.Spi.Common.Context.Definitions;
+using Dfe.Spi.Common.Http.Server.Definitions;
+using Dfe.Spi.Common.Http.Server;
 using Dfe.Spi.Common.Logging;
 using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Publishers;
@@ -101,6 +104,8 @@ namespace Dfe.Spi.EventBroker.Functions
             services.AddScoped<ISendManager, SendManager>();
             services.AddScoped<IPublisherManager, PublisherManager>();
             services.AddScoped<ISubscriptionManager, SubscriptionManager>();
+            services.AddScoped<IHttpSpiExecutionContextManager, HttpSpiExecutionContextManager>();
+            services.AddScoped<ISpiExecutionContextManager>(x => x.GetService<IHttpSpiExecutionContextManager>());
         }
 
         private void AddPublishers(IServiceCollection services)

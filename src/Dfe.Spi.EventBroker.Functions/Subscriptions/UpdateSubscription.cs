@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Dfe.Spi.Common.Http.Server.Definitions;
 
 namespace Dfe.Spi.EventBroker.Functions.Subscriptions
 {
@@ -22,14 +23,18 @@ namespace Dfe.Spi.EventBroker.Functions.Subscriptions
     {
         private readonly ISubscriptionManager _subscriptionManager;
         private readonly ILoggerWrapper _logger;
+        private readonly IHttpSpiExecutionContextManager _httpSpiExecutionContextManager;
+
 
         public UpdateSubscription(
             ISubscriptionManager subscriptionManager,
-            ILoggerWrapper logger)
-            : base(logger)
+            ILoggerWrapper logger,
+            IHttpSpiExecutionContextManager httpSpiExecutionContextManager)
+            : base(httpSpiExecutionContextManager, logger)
         {
             _subscriptionManager = subscriptionManager;
             _logger = logger;
+            _httpSpiExecutionContextManager = httpSpiExecutionContextManager;
         }
 
         [FunctionName("UpdateSubscription")]
@@ -38,10 +43,12 @@ namespace Dfe.Spi.EventBroker.Functions.Subscriptions
             HttpRequest req,
             CancellationToken cancellationToken)
         {
-            return await ValidateAndRunAsync(req, cancellationToken);
+            _httpSpiExecutionContextManager.SetContext(req.Headers);
+
+            return await ValidateAndRunAsync(req, null, cancellationToken);
         }
 
-        protected override HttpErrorBodyResult GetMalformedErrorResponse()
+        protected override HttpErrorBodyResult GetMalformedErrorResponse(FunctionRunContext runContext)
         {
             return new HttpErrorBodyResult(
                 HttpStatusCode.BadRequest,
@@ -49,15 +56,16 @@ namespace Dfe.Spi.EventBroker.Functions.Subscriptions
                 "The supplied body was either empty, or not well-formed JSON.");
         }
 
-        protected override HttpErrorBodyResult GetSchemaValidationResponse(string message)
+        protected override HttpErrorBodyResult GetSchemaValidationResponse(JsonSchemaValidationException validationException, FunctionRunContext runContext)
         {
             return new HttpErrorBodyResult(
                 HttpStatusCode.BadRequest,
                 "SPI-EVBK-INVALIDREQUEST",
-                $"The supplied body was well-formed JSON but it failed validation: {message}");
+                $"The supplied body was well-formed JSON but it failed validation: {validationException.Message}");
         }
 
-        protected override async Task<IActionResult> ProcessWellFormedRequestAsync(UpdateSubscriptionRequest request,
+
+        protected override async Task<IActionResult> ProcessWellFormedRequestAsync(UpdateSubscriptionRequest request, FunctionRunContext runContext,
             CancellationToken cancellationToken)
         {
             var subscription = new Subscription
@@ -71,6 +79,7 @@ namespace Dfe.Spi.EventBroker.Functions.Subscriptions
             
             return new AcceptedResult();
         }
+
     }
 
     public class UpdateSubscriptionRequest : RequestResponseBase
