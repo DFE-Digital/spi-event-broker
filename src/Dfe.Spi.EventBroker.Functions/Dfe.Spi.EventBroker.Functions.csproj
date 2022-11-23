@@ -4,7 +4,7 @@
 		<AzureFunctionsVersion>v4</AzureFunctionsVersion>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Dfe.Spi.Common.Http.Server" Version="2.2.1" />
+        <PackageReference Include="Dfe.Spi.Common.Http.Server" Version="2.2.3" />
         <PackageReference Include="Dfe.Spi.Common.Logging" Version="1.1.1" />
         <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
         <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="5.0.1" />
