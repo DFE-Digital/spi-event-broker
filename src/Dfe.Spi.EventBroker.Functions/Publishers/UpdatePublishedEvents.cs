@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dfe.Spi.Common.Http.Server;
+using Dfe.Spi.Common.Http.Server.Definitions;
 using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Publishers;
 using Dfe.Spi.EventBroker.Domain.Publishers;
@@ -21,13 +22,16 @@ namespace Dfe.Spi.EventBroker.Functions.Publishers
     {
         private readonly IPublisherManager _publisherManager;
         private readonly ILoggerWrapper _logger;
+        private readonly IHttpSpiExecutionContextManager _httpSpiExecutionContextManager;
 
         public UpdatePublishedEvents(
             IPublisherManager publisherManager,
-            ILoggerWrapper logger)
+            ILoggerWrapper logger,
+            IHttpSpiExecutionContextManager httpSpiExecutionContextManager)
         {
             _publisherManager = publisherManager;
             _logger = logger;
+            _httpSpiExecutionContextManager = httpSpiExecutionContextManager;
         }
 
         [FunctionName("UpdatePublishedEvents")]
@@ -36,8 +40,8 @@ namespace Dfe.Spi.EventBroker.Functions.Publishers
             HttpRequest req,
             CancellationToken cancellationToken)
         {
-            _logger.SetContext(req.Headers);
-            
+            _httpSpiExecutionContextManager.SetContext(req.Headers);
+
             var rootObject = await ReadAndValidateRequestAsync(req);
 
             var publisher = ConvertJsonToPublisher(rootObject);

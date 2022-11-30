@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture.NUnit3;
 using Dfe.Spi.Common.Http.Server;
+using Dfe.Spi.Common.Http.Server.Definitions;
 using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Receive;
 using Dfe.Spi.EventBroker.Functions.Receive;
@@ -19,6 +20,7 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Receive
     {
         private Mock<IReceiveManager> _receiveManagerMock;
         private Mock<ILoggerWrapper> _loggerMock;
+        private Mock<IHttpSpiExecutionContextManager> _httpSpiExecutionContextManagerMock;
         private ReceiveEventPublication _function;
         private CancellationToken _cancellationToken;
         private DefaultHttpRequest _defaultRequest;
@@ -27,12 +29,14 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Receive
         public void Arrange()
         {
             _receiveManagerMock = new Mock<IReceiveManager>();
+            _httpSpiExecutionContextManagerMock = new Mock<IHttpSpiExecutionContextManager>();
 
             _loggerMock = new Mock<ILoggerWrapper>();
 
             _function = new ReceiveEventPublication(
                 _receiveManagerMock.Object,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _httpSpiExecutionContextManagerMock.Object);
 
 
             _defaultRequest = new DefaultHttpRequest(new DefaultHttpContext())
@@ -77,7 +81,7 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Receive
 
             Assert.IsNotNull(actual);
             Assert.IsInstanceOf<HttpErrorBodyResult>(actual);
-            Assert.AreEqual(400, ((HttpErrorBodyResult) actual).StatusCode);
+            Assert.AreEqual(400, (int)((HttpErrorBodyResult) actual).StatusCode);
         }
     }
 }

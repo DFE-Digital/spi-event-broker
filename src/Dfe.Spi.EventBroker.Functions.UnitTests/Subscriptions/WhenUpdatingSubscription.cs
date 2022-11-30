@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using Dfe.Spi.Common.Http.Server;
+using Dfe.Spi.Common.Http.Server.Definitions;
 using Dfe.Spi.Common.Logging.Definitions;
 using Dfe.Spi.EventBroker.Application.Subscriptions;
 using Dfe.Spi.EventBroker.Domain.Subscriptions;
@@ -18,6 +19,7 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Subscriptions
         private Fixture _fixture;
         private Mock<ISubscriptionManager> _subscriptionManagerMock;
         private Mock<ILoggerWrapper> _loggerMock;
+        private Mock<IHttpSpiExecutionContextManager> _httpSpiExecutionContextManagerMock;
         private UpdateSubscription _function;
         private CancellationToken _cancellationToken;
 
@@ -28,12 +30,14 @@ namespace Dfe.Spi.EventBroker.Functions.UnitTests.Subscriptions
             _fixture.Register<Uri>(() => new Uri($"https://{_fixture.Create<string>()}.com/{_fixture.Create<string>()}"));
 
             _subscriptionManagerMock = new Mock<ISubscriptionManager>();
+            _httpSpiExecutionContextManagerMock = new Mock<IHttpSpiExecutionContextManager>();
 
             _loggerMock = new Mock<ILoggerWrapper>();
 
             _function = new UpdateSubscription(
                 _subscriptionManagerMock.Object,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _httpSpiExecutionContextManagerMock.Object);
 
             _cancellationToken = new CancellationToken();
         }
